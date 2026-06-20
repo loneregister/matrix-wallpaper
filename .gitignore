@@ -1,0 +1,8 @@
+# shader backups / experiments
+matrix.glsl.bak.*
+*.bak
+
+# editor / OS cruft
+*.swp
+.DS_Store
+__pycache__/
