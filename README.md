@@ -1,5 +1,10 @@
 # Matrix Wallpaper
 
+Something I've always wanted to have on my desktop as a wallpaper.  Animated, moving
+matrix rain that mirrors the totally epic movie.  I used claude to help me get this
+setup for my system. I am sure there are many of you out there much more experienced
+than me, and smarter too, who can pull and update even better features!  Have fun.
+
 An animated **Matrix digital-rain** wallpaper for wlroots Wayland compositors
 (Hyprland, Sway, river, …). A single self-contained GLSL shader renders the real
 film glyph set — mirrored half-width katakana and digits — cascading down your
