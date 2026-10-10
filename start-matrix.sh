@@ -9,7 +9,7 @@
 #   ./start-matrix.sh <output> [WxH]
 #   ./start-matrix.sh DP-3                 # auto-detects that output's resolution
 #   ./start-matrix.sh DP-3 2560x1440       # force a resolution
-#   MATRIX_FPS=30 ./start-matrix.sh eDP-1  # override frame rate (default 60)
+#   MATRIX_FPS=60 ./start-matrix.sh eDP-1  # override frame rate (default 30)
 #
 # Tip: match WxH to the output's real pixel size so the shader renders 1:1 and
 # stays crisp (mpvpaper upscales a smaller render, which softens the glyphs).
@@ -18,7 +18,11 @@ set -euo pipefail
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 export PATH="$HOME/.local/bin:$PATH"      # mpvpaper is often a ~/.local install
 SHADER="$DIR/matrix.glsl"
-FPS="${MATRIX_FPS:-60}"
+# 30 fps is smooth enough for falling-glyph rain and halves the per-frame GLSL
+# shader cost; at 60 fps on a 6K output it starved the compositor of frame
+# budget and made the desktop UI feel laggy.
+FPS="${MATRIX_FPS:-30}"
+LOG="${MATRIX_LOG:-/tmp/matrix-mpvpaper.log}"
 
 OUTPUT="${1:-${MATRIX_OUTPUT:-}}"
 if [[ -z "$OUTPUT" ]]; then
@@ -28,7 +32,7 @@ if [[ -z "$OUTPUT" ]]; then
     hyprctl monitors -j | python3 -c '
 import sys, json
 for m in json.load(sys.stdin):
-    print(f"  {m[\"name\"]}  {m[\"width\"]}x{m[\"height\"]}")' 2>/dev/null || true
+    print("  %s  %dx%d" % (m["name"], m["width"], m["height"]))' 2>/dev/null || true
   fi
   exit 1
 fi
@@ -41,7 +45,7 @@ import sys, json, os
 o = os.environ["MATRIX_O"]
 for m in json.load(sys.stdin):
     if m["name"] == o:
-        print(f"{m[\"width\"]}x{m[\"height\"]}"); break' 2>/dev/null || true)"
+        print("%dx%d" % (m["width"], m["height"])); break' 2>/dev/null || true)"
 fi
 RES="${RES:-1920x1080}"
 
@@ -56,9 +60,9 @@ sleep 0.3
 
 echo "matrix: output=$OUTPUT res=$RES fps=$FPS shader=$SHADER"
 
-# -f forks/daemonizes so this returns to the shell.
+# -f forks/daemonizes so this returns to the shell and survives logout-of-terminal.
 exec mpvpaper -v -f -l bottom \
   -o "no-audio no-osc loop-file=inf keep-open=yes hwdec=no \
       background=color background-color=#000000 \
       glsl-shaders=${SHADER}" \
-  "${OUTPUT}" "av://lavfi:color=c=black:s=${RES}:r=${FPS}"
+  "${OUTPUT}" "av://lavfi:color=c=black:s=${RES}:r=${FPS}" >>"$LOG" 2>&1

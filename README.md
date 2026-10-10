@@ -101,7 +101,8 @@ via `hyprctl` (or pass it explicitly):
 ```bash
 ./start-matrix.sh DP-3                 # auto-detect resolution
 ./start-matrix.sh DP-3 2560x1440       # force resolution
-MATRIX_FPS=30 ./start-matrix.sh eDP-1  # cap the frame rate
+MATRIX_FPS=60 ./start-matrix.sh eDP-1  # raise the frame rate (default 30;
+                                       # logs to /tmp/matrix-mpvpaper.log)
 ```
 
 Run it with no arguments to list your outputs:
